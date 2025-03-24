@@ -1,0 +1,871 @@
+basePath: /
+definitions:
+  domain.CreateUser:
+    properties:
+      email:
+        type: string
+      organization_id:
+        type: integer
+      password:
+        type: string
+      role:
+        type: integer
+    required:
+    - email
+    - organization_id
+    - password
+    - role
+    type: object
+  domain.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  domain.Heartbeat:
+    properties:
+      duration:
+        type: integer
+      log_id:
+        type: integer
+    type: object
+  domain.HubService:
+    properties:
+      description:
+        type: string
+      icon_url:
+        type: string
+      id:
+        type: integer
+      last_update:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      screenshot_url:
+        type: string
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  domain.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  domain.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  domain.MarketingService:
+    properties:
+      benefits:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      features:
+        items:
+          type: string
+        type: array
+      icon_url:
+        type: string
+      id:
+        type: integer
+      marketing_name:
+        type: string
+      screenshot_url:
+        type: string
+      tag_line:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  domain.PublicService:
+    properties:
+      app_url:
+        type: string
+      id:
+        type: integer
+      last_update:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      version:
+        type: string
+    type: object
+  domain.PublicUser:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      organization_id:
+        type: integer
+      organization_name:
+        type: string
+      role_id:
+        type: integer
+    type: object
+  domain.PublicUserServiceLog:
+    properties:
+      duration:
+        type: integer
+      id:
+        type: integer
+      service_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  domain.RefreshTokenResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  domain.Service:
+    type: object
+  domain.SuccessResponse:
+    properties:
+      data:
+        description: Omits Data field if nil
+      message:
+        type: string
+    type: object
+  domain.UseService:
+    properties:
+      log_id:
+        type: integer
+      service:
+        $ref: '#/definitions/domain.PublicService'
+    type: object
+  domain.User:
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: 127.0.0.1:8080
+info:
+  contact:
+    email: suporte@solude.tech
+    name: Eng. Gabriel Coelho | InovaData development team
+    url: https://solude.tech
+  description: Platform API is a RESTful API for managing ...
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Platform API
+  version: 0.1.1
+paths:
+  /forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Sends an email to the user with a link to reset their password
+      operationId: forgotPassword
+      parameters:
+      - description: User email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email sent successfully
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found - User not found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Forgot Password
+      tags:
+      - Auth User
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user using their email and password, then returns
+        access and refresh tokens for session management.
+      operationId: login
+      parameters:
+      - description: Login Request
+        in: body
+        name: loginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/domain.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful login, returns access and refresh tokens
+          schema:
+            $ref: '#/definitions/domain.LoginResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: Unauthorized - Incorrect email or password
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found - User not found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Login user
+      tags:
+      - Auth User
+  /login-guest:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a guest user using their IP address, then returns
+        access and refresh tokens for session management
+      operationId: loginGuest
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful login, returns access and refresh tokens
+          schema:
+            $ref: '#/definitions/domain.LoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Login Guest
+      tags:
+      - Auth User
+  /refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the user's access token
+      operationId: refreshToken
+      parameters:
+      - description: Refresh token
+        in: query
+        name: refreshToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access token refreshed successfully
+          schema:
+            $ref: '#/definitions/domain.RefreshTokenResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid refresh token
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Refresh Token
+      tags:
+      - Auth User
+  /reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Resets the user's password
+      operationId: resetPassword
+      parameters:
+      - description: User email
+        in: query
+        name: email
+        required: true
+        type: string
+      - description: New password
+        in: query
+        name: newPassword
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset successfully
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found - User not found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Reset Password
+      tags:
+      - Auth User
+  /services:
+    get:
+      description: Gets all available services
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/domain.SuccessResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/domain.PublicService'
+                    type: array
+                type: object
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Fetch Services
+      tags:
+      - Service
+    post:
+      consumes:
+      - application/json
+      description: Creates a new service
+      parameters:
+      - description: Service data
+        in: body
+        name: service
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Service'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.PublicService'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Create Service
+      tags:
+      - Service
+  /services/{identifier}:
+    get:
+      description: Gets service by numeric ID (e.g., /services/123) or name (/services/my-service)
+      parameters:
+      - description: Service ID or Name
+        in: path
+        name: identifier
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.PublicService'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get Service by Identifier
+      tags:
+      - Service
+  /services/{serviceID}:
+    delete:
+      description: Deletes a service
+      parameters:
+      - description: Service ID
+        in: path
+        name: serviceID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Delete Service
+      tags:
+      - Service
+    put:
+      consumes:
+      - application/json
+      description: Updates service data
+      parameters:
+      - description: Service ID
+        in: path
+        name: serviceID
+        required: true
+        type: integer
+      - description: Service data
+        in: body
+        name: service
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Service'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.PublicService'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Update Service
+      tags:
+      - Service
+  /services/{serviceID}/application:
+    get:
+      consumes:
+      - application/json
+      description: Logs that a user started using a service, returns log ID and public
+        service data
+      parameters:
+      - description: Service ID
+        in: path
+        name: serviceID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.UseService'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Start using a service (create a usage log)
+      tags:
+      - Service
+  /services/{serviceID}/organization/{organizationID}:
+    post:
+      description: Links the service to an organization
+      parameters:
+      - description: Service ID
+        in: path
+        name: serviceID
+        required: true
+        type: integer
+      - description: Organization ID
+        in: path
+        name: organizationID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Set Service Availability
+      tags:
+      - Service
+  /services/heartbeat:
+    patch:
+      consumes:
+      - application/json
+      description: Adds usage duration (in seconds) to a log record
+      parameters:
+      - description: Heartbeat data
+        in: body
+        name: heartbeat
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Heartbeat'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.SuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Heartbeat usage
+      tags:
+      - Service
+  /services/marketing:
+    get:
+      description: Gets all marketing services
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.MarketingService'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get Marketing Services
+      tags:
+      - Website Service
+  /services/organization:
+    get:
+      description: Gets all services linked to an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/domain.HubService'
+              type: array
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get Services by Organization
+      tags:
+      - Service
+  /user-service-logs:
+    get:
+      description: Gets all user-service log entries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/domain.SuccessResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/domain.PublicUserServiceLog'
+                    type: array
+                type: object
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Fetch all UserServiceLogs
+      tags:
+      - UserServiceLog
+  /user-service-logs/{identifier}:
+    get:
+      description: Gets a user-service log entry by a flexible identifier
+      parameters:
+      - description: Identifier
+        in: path
+        name: identifier
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.PublicUserServiceLog'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get a UserServiceLog by ID or user:XXX or service:XXX
+      tags:
+      - UserServiceLog
+  /user-service-logs/{logID}:
+    delete:
+      description: Removes a user-service log record
+      parameters:
+      - description: UserServiceLog ID
+        in: path
+        name: logID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Delete a UserServiceLog
+      tags:
+      - UserServiceLog
+  /user/{id}:
+    delete:
+      description: Delete user by ID
+      operationId: deleteUser
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User deleted successfully
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Delete user
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update user by ID
+      operationId: updateUser
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Update user
+      tags:
+      - User
+  /user/{identifier}:
+    get:
+      description: Get user by ID or email
+      operationId: getUser
+      parameters:
+      - description: User ID or email
+        in: path
+        name: identifier
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User object
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.PublicUser'
+              type: object
+        "404":
+          description: Not Found - User not found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get user by ID or email
+      tags:
+      - User
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with the input payload
+      operationId: createUser
+      parameters:
+      - description: User object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Create a new user account
+      tags:
+      - User
+  /users:
+    get:
+      description: Get all users from the database
+      operationId: fetchUsers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/domain.PublicUser'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get all users
+      tags:
+      - User
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
