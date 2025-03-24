@@ -43,13 +43,13 @@ func main() {
 	// Context timeout
 	timeout := time.Duration(env.ContextTimeout) * time.Second
 
-	// Create a Gin router instance
+	// Create a Gin router instancehttps://github.com/inova-data-tech/Solude-api.git
 	router := gin.Default()
 
 	// CORS
 	router.Use(cors.New(cors.Config{
 		//AllowAllOrigins: true,
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001", "http://195.200.0.244:3000", "http://solude.inovadata.tech", "https://solude.inovadata.tech"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001", "http://195.200.0.244:3000", "http://solude.inovadata.tech", "https://solude.inovadata.tech", "https://solude.tech"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
